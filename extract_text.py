@@ -79,8 +79,9 @@ class BoundingBoxTextExtractor:
         scale_factor = 2
         resized_roi = cv2.resize(gray_roi, None, fx=scale_factor, fy=scale_factor, interpolation=cv2.INTER_CUBIC)
 
-        # Perform OCR | Remove `-c` param to recognize all characters
-        custom_config = r'--oem 3 --psm 6 -c tessedit_char_whitelist=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_'
+        # Perform OCR | Optional whitelist parameter: \
+            # -c tessedit_char_whitelist=0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_
+        custom_config = r'--oem 3 --psm 6'
         text = pytesseract.image_to_string(resized_roi, config=custom_config)
 
         return text.strip()
