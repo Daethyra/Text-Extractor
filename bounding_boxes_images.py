@@ -19,10 +19,8 @@ def draw_rectangle(event, x, y, flags, param):
         flags (int): Any relevant flags passed by OpenCV.
         param (any): Additional parameters (not used in this function).
     """
-    # Global variables
     global ix, iy, drawing, img, img_copy
 
-    # Handle mouse events
     if event == cv2.EVENT_LBUTTONDOWN:
         drawing = True
         ix, iy = x, y
@@ -36,6 +34,34 @@ def draw_rectangle(event, x, y, flags, param):
         drawing = False
         cv2.rectangle(img, (ix, iy), (x, y), (0, 0, 255), 2)
         img_copy = img.copy()
+
+def resize_to_fit_screen(image, max_width, max_height):
+    """
+    Resizes the image to fit within the screen dimensions while maintaining its aspect ratio.
+
+    Args:
+        image (numpy.ndarray): The original image.
+        max_width (int): Maximum screen width.
+        max_height (int): Maximum screen height.
+
+    Returns:
+        numpy.ndarray: The resized image.
+    """
+    height, width = image.shape[:2]
+    aspect_ratio = width / height
+
+    if width > max_width or height > max_height:
+        if width / max_width > height / max_height:
+            # Scale by width
+            new_width = max_width
+            new_height = int(max_width / aspect_ratio)
+        else:
+            # Scale by height
+            new_height = max_height
+            new_width = int(max_height * aspect_ratio)
+        image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+    
+    return image
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Draw a red bounding box on an image and save it.")
@@ -53,29 +79,38 @@ if __name__ == "__main__":
         print("Error: Could not load the image file.")
         exit()
 
-    # Initialize variables
+    # Screen dimensions (for most systems, max window size is 1920x1080 or similar)
+    screen_width = 1920  # Replace with dynamic detection if necessary
+    screen_height = 1080
+
+    # Resize the image to fit within the screen
+    img = resize_to_fit_screen(img, screen_width, screen_height)
     img_copy = img.copy()
+
+    # Initialize variables
     ix, iy = -1, -1
     drawing = False
 
-    # Create a window and set the mouse callback
-    cv2.namedWindow("Image")
+    # Create a resizable window
+    cv2.namedWindow("Image", cv2.WINDOW_NORMAL)
     cv2.setMouseCallback("Image", draw_rectangle)
 
+    # Set initial window size
+    initial_width = img.shape[1]
+    initial_height = img.shape[0]
+    cv2.resizeWindow("Image", initial_width, initial_height)
+
     while True:
-        
         # Display the image
         cv2.imshow("Image", img)
         key = cv2.waitKey(1) & 0xFF
 
         # Save the image if 's' is pressed
         if key == ord('s'):
-            # Extract file name and extension
             file_name, file_ext = os.path.splitext(os.path.basename(args.image_path))
             save_name = f"{file_name}_bounding_boxed{file_ext}"
             save_path = os.path.join(os.getcwd(), save_name)
             
-            # Save the image
             cv2.imwrite(save_path, img_copy)
             print(f"Image saved as {save_path}")
             break
