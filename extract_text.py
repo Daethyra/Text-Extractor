@@ -1,6 +1,13 @@
+import os
 import cv2
+from dotenv import load_dotenv
 import numpy as np
 import pytesseract
+
+# Load environment variables from .env file
+load_dotenv()
+
+pytesseract.pytesseract.tesseract_cmd = os.getenv("PYTESSERACT_PATH")
 
 class BoundingBoxTextExtractor:
     """
