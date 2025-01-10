@@ -1,3 +1,8 @@
+"""
+draw_boundingbox.py
+-> CLI tool to draw a bounding box on an image
+"""
+
 import cv2
 import numpy as np
 import argparse
